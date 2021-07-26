@@ -386,15 +386,14 @@ class TibberSensorRT(update_coordinator.CoordinatorEntity, TibberSensor):
         TibberSensor.__init__(self, tibber_home)
         self._model = "Tibber Pulse"
         self._device_name = f"{self._model} {self._home_name}"
-        self._reset_type = metadata.reset_type
-        self._key = metadata.key
+        self._metadata = metadata
 
         self._attr_device_class = metadata.device_class
         self._attr_name = f"{metadata.name} {self._home_name}"
         self._attr_state = initial_state
         self._attr_unique_id = f"{self._tibber_home.home_id}_rt_{metadata.name}"
 
-        if metadata.name in ("accumulated cost", "accumulated reward"):
+        if metadata.key in ("accumulatedCost", "accumulatedReward"):
             self._attr_unit_of_measurement = tibber_home.currency
         else:
             self._attr_unit_of_measurement = metadata.unit
@@ -421,21 +420,21 @@ class TibberSensorRT(update_coordinator.CoordinatorEntity, TibberSensor):
     def _handle_coordinator_update(self) -> None:
         if not (live_measurement := self.coordinator.get_live_measurement()):  # type: ignore
             return
-        state = live_measurement.get(self._key)
-        print("state", state, self._key)
+        state = live_measurement.get(self._metadata.key)
+        print("state", state, self._metadata.key)
         if state is None:
             return
         timestamp = dt_util.parse_datetime(live_measurement["timestamp"])
         if timestamp is not None and state < self._attr_state:
-            if self._reset_type == ResetType.DAILY:
+            if self._metadata.reset_type == ResetType.DAILY:
                 self._attr_last_reset = dt_util.as_utc(
                     timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
                 )
-            elif self._reset_type == ResetType.HOURLY:
+            elif self._metadata.reset_type == ResetType.HOURLY:
                 self._attr_last_reset = dt_util.as_utc(
                     timestamp.replace(minute=0, second=0, microsecond=0)
                 )
-        if self._key == "powerFactor":
+        if self._metadata.key == "powerFactor":
             state *= 100.0
         self._attr_state = state
         self.async_write_ha_state()
