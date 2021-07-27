@@ -421,7 +421,6 @@ class TibberSensorRT(update_coordinator.CoordinatorEntity, TibberSensor):
         if not (live_measurement := self.coordinator.get_live_measurement()):  # type: ignore
             return
         state = live_measurement.get(self._metadata.key)
-        print("state", state, self._metadata.key)
         if state is None:
             return
         timestamp = dt_util.parse_datetime(live_measurement["timestamp"])
@@ -475,7 +474,6 @@ class TibberRtDataCoordinator(update_coordinator.DataUpdateCoordinator):
 
         new_entities = []
         for sensor_description in self._all_sensors:
-            print("....", sensor_description.key)
             state = live_measurement.get(sensor_description.key)
             if state is None:
                 continue
