@@ -67,7 +67,7 @@ class TibberSensorMetadata(NamedTuple):
     reset_type: ResetType | None = None
 
 
-RT_SENSORS: list[TibberSensorMetadata] = [
+RT_SENSORS: tuple[TibberSensorMetadata, ...] = (
     TibberSensorMetadata(
         "averagePower",
         "average power",
@@ -214,7 +214,7 @@ RT_SENSORS: list[TibberSensorMetadata] = [
         unit=PERCENTAGE,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
-]
+)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -447,7 +447,7 @@ class TibberRtDataCoordinator(update_coordinator.DataUpdateCoordinator):
         self._async_add_entities = async_add_entities
         self._tibber_home = tibber_home
         self.hass = hass
-        self._all_sensors = RT_SENSORS.copy()
+        self._all_sensors = list(RT_SENSORS)
         super().__init__(
             hass,
             _LOGGER,
